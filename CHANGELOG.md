@@ -10,3 +10,4 @@ and versions are tracked in the repo-root `VERSION` file.
 ### Added
 
 - Initialized the repository with the Base-managed repo baseline.
+- Added the Northstar reference consumer with nested status and release commands.

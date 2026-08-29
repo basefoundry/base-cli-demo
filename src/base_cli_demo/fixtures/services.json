@@ -1,0 +1,60 @@
+{
+  "services": [
+    {
+      "name": "orders-api",
+      "environment": "dev",
+      "version": "2.4.0",
+      "status": "ready",
+      "owner": "commerce"
+    },
+    {
+      "name": "billing-worker",
+      "environment": "dev",
+      "version": "1.8.2",
+      "status": "ready",
+      "owner": "finance"
+    },
+    {
+      "name": "web",
+      "environment": "dev",
+      "version": "3.1.0",
+      "status": "degraded",
+      "owner": "commerce"
+    },
+    {
+      "name": "orders-api",
+      "environment": "staging",
+      "version": "2.3.9",
+      "status": "ready",
+      "owner": "commerce"
+    },
+    {
+      "name": "billing-worker",
+      "environment": "staging",
+      "version": "1.8.2",
+      "status": "ready",
+      "owner": "finance"
+    },
+    {
+      "name": "orders-api",
+      "environment": "prod",
+      "version": "2.3.8",
+      "status": "ready",
+      "owner": "commerce"
+    },
+    {
+      "name": "billing-worker",
+      "environment": "prod",
+      "version": "1.8.1",
+      "status": "ready",
+      "owner": "finance"
+    },
+    {
+      "name": "web",
+      "environment": "prod",
+      "version": "3.0.6",
+      "status": "ready",
+      "owner": "commerce"
+    }
+  ]
+}
