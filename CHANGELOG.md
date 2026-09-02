@@ -16,3 +16,4 @@ and versions are tracked in the repo-root `VERSION` file.
   redacted diagnostics, temporary paths, and cleanup.
 - Added released-package compatibility CI and installed-wheel README command checks.
 - Added optional Typer, Rich, and telemetry learning scenarios with minimal-path fallbacks.
+- Added reproducible wheel/source-distribution validation and release artifacts.

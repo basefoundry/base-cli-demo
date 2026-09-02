@@ -60,6 +60,10 @@ boundary explained beside each scenario, see the
   the supported Base-CLI range and the installed-wheel CI gate.
 - The [optional integration scenarios](docs/optional-integrations.md) show
   Typer, Rich, and OpenTelemetry without making them core dependencies.
+- The [release process](docs/release-process.md) covers reproducible wheel and
+  source-distribution validation separately from Base-CLI versioning.
+- The [release process](docs/release-process.md) covers reproducible wheel and
+  source-distribution validation separately from Base-CLI versioning.
 
 ## Framework boundary
 
