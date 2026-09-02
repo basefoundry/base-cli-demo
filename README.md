@@ -62,8 +62,6 @@ boundary explained beside each scenario, see the
   Typer, Rich, and OpenTelemetry without making them core dependencies.
 - The [release process](docs/release-process.md) covers reproducible wheel and
   source-distribution validation separately from Base-CLI versioning.
-- The [release process](docs/release-process.md) covers reproducible wheel and
-  source-distribution validation separately from Base-CLI versioning.
 
 ## Framework boundary
 
@@ -108,8 +106,8 @@ python -m pytest
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
-to `>=0.4.3,<0.5`. The repository intentionally keeps demo versioning separate
-from framework versioning.
+to `>=0.4.3,<0.5`. This checkout targets demo release `v0.1.0`; demo release
+versioning remains separate from framework versioning.
 
 ## Repository shape
 
