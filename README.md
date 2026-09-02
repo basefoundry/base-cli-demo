@@ -58,8 +58,8 @@ boundary explained beside each scenario, see the
   structured errors, redacted diagnostics, temporary paths, and cleanup.
 - The [released-package compatibility guide](docs/compatibility.md) explains
   the supported Base-CLI range and the installed-wheel CI gate.
-- The [released-package compatibility guide](docs/compatibility.md) explains
-  the supported Base-CLI range and the installed-wheel CI gate.
+- The [optional integration scenarios](docs/optional-integrations.md) show
+  Typer, Rich, and OpenTelemetry without making them core dependencies.
 
 ## Framework boundary
 

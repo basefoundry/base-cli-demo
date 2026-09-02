@@ -17,9 +17,21 @@ dependencies = [
 dev = [
   "pytest>=8,<9",
 ]
+typer = [
+  "typer>=0.12,<0.28",
+]
+rich = [
+  "rich>=13.7,<15",
+]
+telemetry = [
+  "opentelemetry-api>=1.24,<2",
+]
 
 [project.scripts]
 northstar = "base_cli_demo.cli:main"
+northstar-typer = "base_cli_demo.typer_scenario:main"
+northstar-rich = "base_cli_demo.rich_scenario:main"
+northstar-telemetry = "base_cli_demo.telemetry_scenario:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -27,3 +27,17 @@ jobs:
         run: python -m pip install ".[dev]"
       - name: Run consumer tests
         run: python -m pytest
+
+  optional-integrations:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install optional integration extras
+        run: python -m pip install ".[dev,typer,rich,telemetry]"
+      - name: Run optional integration tests
+        run: python -m pytest -q tests/test_optional_scenarios.py
