@@ -14,28 +14,32 @@ after its dependencies are installed.
 From a fresh checkout:
 
 ```bash
-python3 -m venv .venv
+$ python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install .
-northstar --help
-northstar --quiet status
+$ python -m pip install .
+$ northstar --help
+$ northstar --quiet status
 ```
 
 The default environment is `dev`. Select another fixture environment with the
 framework lifecycle option:
 
 ```bash
-northstar --quiet --environment staging status
-northstar --quiet --environment dev status --format json
-northstar --quiet --environment dev release plan --version 2.5.0
-northstar --quiet --environment dev --dry-run release reconcile --version 2.5.0 --format json
+$ northstar --quiet --environment staging status
+$ northstar --quiet --environment dev status --format json
+$ northstar --quiet --environment dev release plan --version 2.5.0
+$ northstar --quiet --environment dev --dry-run release reconcile --version 2.5.0 --format json
 ```
 
 Base-CLI also provides the optional versioned lifecycle envelope:
 
 ```bash
-northstar --quiet --environment dev --json status --format json
+$ northstar --quiet --environment dev --json status --format json
 ```
+
+For a guided five-minute walkthrough with expected output and the framework
+boundary explained beside each scenario, see the
+[scenario-driven learning path](docs/learning-path.md).
 
 ## What this demonstrates
 
