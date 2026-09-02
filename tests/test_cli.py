@@ -112,3 +112,63 @@ def test_json_lifecycle_envelope_is_available_to_consumers() -> None:
     assert payload["schema"] == "base-cli.output"
     assert payload["code"] == "ok"
     assert '"orders-api"' in payload["details"]["stdout"]
+
+
+def test_default_consumer_config_reports_its_own_provenance() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        result = invoke(["config", "show", "--format", "json"], Path(directory))
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout) == [
+        {
+            "setting": "service_owner",
+            "value": None,
+            "source": "consumer-default",
+        },
+        {
+            "setting": "release_version",
+            "value": "2.5.0",
+            "source": "consumer-default",
+        },
+    ]
+
+
+def test_explicit_consumer_config_filters_and_sets_release_default() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        config_path = root / "northstar.json"
+        config_path.write_text(
+            '{"service_owner": "commerce", "release_version": "2.6.0"}',
+            encoding="utf-8",
+        )
+        result = invoke(
+            [
+                "--config",
+                str(config_path),
+                "release",
+                "plan",
+                "--format",
+                "json",
+            ],
+            root / "home",
+        )
+
+    assert result.exit_code == 0, result.output
+    records = json.loads(result.stdout)
+    assert [record["service"] for record in records] == ["orders-api", "web"]
+    assert {record["target_version"] for record in records} == {"2.6.0"}
+
+
+def test_invalid_consumer_config_is_a_safe_configuration_error() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        config_path = root / "invalid.json"
+        config_path.write_text('{"service_owner": 42}', encoding="utf-8")
+        result = invoke(
+            ["--config", str(config_path), "status"],
+            root / "home",
+        )
+
+    assert result.exit_code == 2
+    assert "service_owner" in result.output
+    assert "Traceback" not in result.output
