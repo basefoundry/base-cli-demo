@@ -83,6 +83,29 @@ def _render(
     )
 
 
+def _persist_reconciliation(
+    context: base_cli.Context[Any, Any, Any], record: Mapping[str, Any]
+) -> None:
+    """Persist local demo state and clean its temporary input after the run."""
+
+    if context.dry_run:
+        return
+
+    state_path = context.state_dir / "last-reconciliation.json"
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(
+        json.dumps(dict(record), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    temporary_input = context.temp_dir / "reconciliation-input.json"
+    temporary_input.write_text(
+        json.dumps(dict(record), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
+
+
 def _service_option(function: Any) -> Any:
     return click.option(
         "--service",
@@ -235,6 +258,7 @@ def reconcile(
         "action": action,
         "external_changes": False,
     }
+    _persist_reconciliation(context, record)
     _render(
         context,
         (record,),

@@ -54,6 +54,8 @@ boundary explained beside each scenario, see the
   Base-CLI output API.
 - The `--json` option wraps command output in Base-CLI's versioned success or
   error envelope.
+- The [lifecycle safety guide](docs/lifecycle-safety.md) shows dry-run safety,
+  structured errors, redacted diagnostics, temporary paths, and cleanup.
 
 ## Framework boundary
 
