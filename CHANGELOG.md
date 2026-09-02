@@ -14,3 +14,4 @@ and versions are tracked in the repo-root `VERSION` file.
 - Added a five-minute scenario-driven learning path with CI-checked command examples.
 - Added lifecycle safety examples for dry-run, structured output and errors,
   redacted diagnostics, temporary paths, and cleanup.
+- Added released-package compatibility CI and installed-wheel README command checks.

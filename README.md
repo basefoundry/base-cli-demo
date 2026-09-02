@@ -56,6 +56,10 @@ boundary explained beside each scenario, see the
   error envelope.
 - The [lifecycle safety guide](docs/lifecycle-safety.md) shows dry-run safety,
   structured errors, redacted diagnostics, temporary paths, and cleanup.
+- The [released-package compatibility guide](docs/compatibility.md) explains
+  the supported Base-CLI range and the installed-wheel CI gate.
+- The [released-package compatibility guide](docs/compatibility.md) explains
+  the supported Base-CLI range and the installed-wheel CI gate.
 
 ## Framework boundary
 
