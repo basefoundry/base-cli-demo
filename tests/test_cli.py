@@ -100,6 +100,76 @@ def test_reconcile_dry_run_reports_no_external_changes() -> None:
     ]
 
 
+def test_reconcile_dry_run_does_not_persist_consumer_state() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        result = invoke(
+            ["--dry-run", "release", "reconcile", "--format", "json"],
+            root,
+        )
+
+        assert result.exit_code == 0, result.output
+        assert list(root.rglob("last-reconciliation.json")) == []
+
+
+def test_reconcile_persists_state_and_cleans_temporary_input() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        result = invoke(
+            ["release", "reconcile", "--format", "json"],
+            root,
+        )
+
+        assert result.exit_code == 0, result.output
+        state_files = list(root.rglob("last-reconciliation.json"))
+        assert len(state_files) == 1
+        assert (
+            json.loads(state_files[0].read_text(encoding="utf-8"))["action"]
+            == "reconciled"
+        )
+        assert list(root.rglob("reconciliation-input.json")) == []
+
+
+def test_json_error_envelope_preserves_nonzero_exit_status() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        result = invoke(
+            ["--json", "--environment", "unknown", "status"],
+            Path(directory),
+        )
+
+    assert result.exit_code != 0
+    payload = json.loads(result.stdout)
+    assert payload["schema"] == "base-cli.error"
+    assert payload["type"] == "error"
+    assert payload["details"]["exit_code"] == result.exit_code
+
+
+def test_debug_log_file_redacts_sensitive_adapter_argument() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        log_path = root / "northstar.log"
+        secret = "demo-secret"
+        result = base_cli.testing.invoke(
+            command,
+            [
+                "--debug",
+                "--log-file",
+                str(log_path),
+                "release",
+                "reconcile",
+                "--approval-token",
+                secret,
+            ],
+            home=root / "home",
+        )
+
+        assert result.exit_code == 0, result.output
+        log_text = log_path.read_text(encoding="utf-8")
+
+    assert secret not in log_text
+    assert "[REDACTED]" in log_text
+
+
 def test_json_lifecycle_envelope_is_available_to_consumers() -> None:
     with tempfile.TemporaryDirectory() as directory:
         result = invoke(
