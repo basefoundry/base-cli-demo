@@ -14,7 +14,9 @@ Releases.
    Keep ordinary pull requests under `[Unreleased]`; only release-preparation
    work changes the published version.
 4. Run the repository validation command, `git diff --check`, and any package
-   or integration checks required by this repository.
+   or integration checks required by this repository. For package checks, run
+   `./tests/package.sh`; it builds a wheel and source distribution in a
+   temporary directory and validates their contents with `twine`.
 5. Open and merge the release-preparation pull request.
 6. Sync local `main`, then inspect the release:
 
@@ -33,12 +35,17 @@ Releases.
    ```
 
 8. Verify the annotated tag and GitHub Release for `basefoundry/base-cli-demo`.
-9. Complete every declared downstream handoff. For Homebrew, update the tap
+9. The `Release package` workflow validates the tagged version, runs the
+   package gate, installs the built wheel, and uploads the wheel/source
+   distributions as a workflow artifact. Base's `basectl release publish`
+   remains the guarded publisher for GitHub Release notes; this demo workflow
+   does not imply a PyPI or Base-CLI release.
+10. Complete every declared downstream handoff. For Homebrew, update the tap
    formula to the published archive and checksum, run the formula tests and
    audit, publish required bottles, and verify install and upgrade paths. If a
    downstream repository pins this project by commit, update and validate that
    pin after the release.
-10. Record the release and downstream URLs on the release issue, then remove
+11. Record the release and downstream URLs on the release issue, then remove
     the release worktree and merged branches when safe.
 
 ## Repository Contract
