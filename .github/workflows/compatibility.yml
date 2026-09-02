@@ -1,0 +1,76 @@
+name: Compatibility
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      upcoming_base_cli:
+        description: "Optional pip requirement suffix for an upcoming build, for example ==0.4.4rc1"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supported:
+    name: ${{ matrix.base_cli.name }} / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+        base_cli:
+          - name: minimum released
+            spec: "==0.4.3"
+          - name: latest supported
+            spec: ">=0.4.3,<0.5"
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build the demo wheel
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip wheel --no-deps --wheel-dir dist .
+      - name: Install the released framework and test runner
+        run: python -m pip install "base-cli${{ matrix.base_cli.spec }}" "pytest>=8,<9"
+      - name: Install the demo wheel without source dependencies
+        run: python -m pip install --no-deps dist/*.whl
+      - name: Confirm the wheel is the imported application
+        run: python -c 'import base_cli_demo, pathlib; root = pathlib.Path.cwd().resolve(); assert root not in pathlib.Path(base_cli_demo.__file__).resolve().parents'
+      - name: Validate the repository baseline
+        run: ./tests/validate.sh
+      - name: Run installed-wheel compatibility tests
+        run: python -m pytest -q
+
+  upcoming:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.upcoming_base_cli != '' }}
+    continue-on-error: true
+    name: upcoming Base-CLI (${{ inputs.upcoming_base_cli }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Build the demo wheel
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip wheel --no-deps --wheel-dir dist .
+      - name: Install the upcoming framework build and test runner
+        run: python -m pip install "base-cli${{ inputs.upcoming_base_cli }}" "pytest>=8,<9"
+      - name: Install the demo wheel without source dependencies
+        run: python -m pip install --no-deps dist/*.whl
+      - name: Run the non-blocking upcoming compatibility check
+        run: python -m pytest -q
