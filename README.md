@@ -61,6 +61,28 @@ planning policy, and domain-facing messages.
 The generic consumer profile is explicit in `src/base_cli_demo/cli.py`. The demo
 does not inherit Base-specific manifest, project, history, or cache conventions.
 
+## Consumer-owned configuration
+
+Northstar keeps the generic Base-CLI profile and opts into one small
+consumer-owned policy: an explicit JSON config can filter services by owner and
+set the default release target. The default path has no config file and uses
+the generic profile defaults; the configured path is an application adapter,
+not a Base repository convention.
+
+Try the default policy and then the checked-in commerce policy:
+
+```bash
+$ northstar --quiet config show --format json
+$ northstar --quiet --config examples/northstar-commerce.json status --format json
+$ northstar --quiet --config examples/northstar-commerce.json release plan --format json
+```
+
+The `config show` command reports each normalized value and whether it came
+from the consumer default or the explicit file. Invalid JSON or unsupported
+values produce a safe configuration error with exit status 2. See
+[`docs/configuration.md`](docs/configuration.md) for the schema and the
+profile boundary.
+
 ## Development
 
 Install the development extra and run the focused suite:
