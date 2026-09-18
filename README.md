@@ -97,11 +97,12 @@ profile boundary.
 
 ## Development
 
-Install the development extra and run the focused suite:
+Install the development extra and run the authoritative consumer gate (which
+checks the installed environment and runs the complete suite, including the
+documented-command smoke tests):
 
 ```bash
 python -m pip install ".[dev]"
-python -m pytest
 ./tests/validate.sh
 ```
 
