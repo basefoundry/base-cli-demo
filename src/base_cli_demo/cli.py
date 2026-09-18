@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from importlib.resources import files
+from importlib.util import find_spec
 from typing import Any
 
 import base_cli
@@ -17,6 +18,19 @@ OUTPUT_FORMAT = click.Choice(
     base_cli.output_format_choices().split("|"),
     case_sensitive=False,
 )
+
+
+def _check_format_dependency(
+    _context: click.Context, _parameter: click.Parameter, value: str
+) -> str:
+    """Reject unavailable optional renderers before command side effects."""
+
+    if value.lower() == "yaml" and find_spec("yaml") is None:
+        raise click.ClickException(
+            "YAML output requires the optional renderer; install it with "
+            "`python -m pip install 'base-cli-demo[yaml]'`."
+        )
+    return value
 
 
 def _load_services() -> tuple[dict[str, str], ...]:
@@ -124,6 +138,7 @@ def _format_option(function: Any) -> Any:
         default="text",
         show_default=True,
         help="Render text, CSV, TSV, YAML, JSON, or NDJSON.",
+        callback=_check_format_dependency,
     )(function)
 
 

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import base_cli
+import base_cli_demo.cli as cli_module
+import pytest
 
 from base_cli_demo.cli import command
 
@@ -128,6 +130,35 @@ def test_reconcile_persists_state_and_cleans_temporary_input() -> None:
             == "reconciled"
         )
         assert list(root.rglob("reconciliation-input.json")) == []
+
+
+def test_yaml_without_optional_renderer_fails_before_reconciliation_state(
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setattr(cli_module, "find_spec", lambda _name: None)
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        result = invoke(["release", "reconcile", "--format", "yaml"], root)
+
+        assert result.exit_code == 1
+        assert "base-cli-demo[yaml]" in result.output
+        assert list(root.rglob("last-reconciliation.json")) == []
+
+
+def test_yaml_extra_renders_reconciliation_when_available() -> None:
+    try:
+        import yaml  # noqa: F401
+    except ImportError:
+        pytest.skip("PyYAML is installed by the optional yaml extra")
+
+    with tempfile.TemporaryDirectory() as directory:
+        result = invoke(
+            ["--dry-run", "release", "reconcile", "--format", "yaml"],
+            Path(directory),
+        )
+
+    assert result.exit_code == 0, result.output
+    assert "target_version: 2.5.0" in result.stdout
 
 
 def test_json_error_envelope_preserves_nonzero_exit_status() -> None:

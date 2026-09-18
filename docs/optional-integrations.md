@@ -57,3 +57,17 @@ does not attach argv, configuration, paths, or secrets.
 The focused tests run in both modes: the normal CI job exercises the minimal
 fallbacks, while the optional-integration CI job installs all three extras and
 exercises the enabled adapters.
+
+## YAML output
+
+YAML is an optional Base-CLI renderer. Install it explicitly before using
+`--format yaml`:
+
+```console
+$ python -m pip install "base-cli-demo[yaml]"
+$ northstar --quiet status --format yaml
+```
+
+Without the extra, Northstar reports the install command before running the
+consumer command, so a reconciliation cannot persist state and then fail while
+rendering its result.
