@@ -11,6 +11,14 @@ from typing import Any
 import base_cli
 
 
+def normalize_release_version(value: object) -> str:
+    """Apply Northstar's non-empty-string policy to config and CLI values."""
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("release version must be a non-empty string.")
+    return value.strip()
+
+
 @dataclass(frozen=True)
 class NorthstarConfig:
     """Validated settings owned by the Northstar consumer."""
@@ -43,14 +51,17 @@ class NorthstarConfig:
             service_owner = service_owner.strip()
 
         release_version = values.get("release_version", cls.release_version)
-        if not isinstance(release_version, str) or not release_version.strip():
+        try:
+            release_version = normalize_release_version(release_version)
+        except ValueError as exc:
             raise base_cli.ConfigurationError(
-                "Northstar config key 'release_version' must be a non-empty string."
-            )
+                "Northstar config key 'release_version' "
+                "must be a non-empty string."
+            ) from exc
 
         return cls(
             service_owner=service_owner,
-            release_version=release_version.strip(),
+            release_version=release_version,
         )
 
     def as_mapping(self) -> dict[str, Any]:
@@ -65,9 +76,9 @@ class NorthstarConfig:
 def _load_json(path: Path) -> dict[str, Any]:
     try:
         contents = path.read_text(encoding="utf-8")
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         raise base_cli.ConfigurationError(
-            f"Unable to read Northstar config file '{path}': {exc}"
+            f"Unable to read Northstar config file '{path}' as UTF-8: {exc}"
         ) from exc
 
     try:

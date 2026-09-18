@@ -10,7 +10,7 @@ from typing import Any
 import base_cli
 import click
 
-from .profile import get_config, northstar_profile
+from .profile import get_config, northstar_profile, normalize_release_version
 
 SERVICE_NAMES = ("orders-api", "billing-worker", "web")
 OUTPUT_FORMAT = click.Choice(
@@ -127,6 +127,19 @@ def _format_option(function: Any) -> Any:
     )(function)
 
 
+def _release_version_option(
+    context: click.Context, parameter: click.Parameter, value: str | None
+) -> str | None:
+    """Normalize overrides with the same policy used by consumer config."""
+
+    if value is None:
+        return None
+    try:
+        return normalize_release_version(value)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), ctx=context, param=parameter) from exc
+
+
 @click.group(
     name="northstar", help="Explore a production-shaped base-cli consumer offline."
 )
@@ -180,6 +193,7 @@ def release() -> None:
     "target_version",
     default=None,
     help="Override the configured target release version.",
+    callback=_release_version_option,
 )
 @_service_option
 def plan(service: str, target_version: str | None, output_format: str) -> None:
@@ -225,6 +239,7 @@ def plan(service: str, target_version: str | None, output_format: str) -> None:
     "target_version",
     default=None,
     help="Override the configured target release version.",
+    callback=_release_version_option,
 )
 @_service_option
 @click.option(
