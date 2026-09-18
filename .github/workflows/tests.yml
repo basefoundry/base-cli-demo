@@ -41,3 +41,14 @@ jobs:
         run: python -m pip install ".[dev,typer,rich,telemetry]"
       - name: Run optional integration tests
         run: python -m pytest -q tests/test_optional_scenarios.py
+
+  required-consumer:
+    name: required-consumer
+    if: ${{ always() }}
+    needs: [validate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the consumer validation job
+        env:
+          VALIDATION_RESULT: ${{ needs.validate.result }}
+        run: test "$VALIDATION_RESULT" = success

@@ -74,3 +74,14 @@ jobs:
         run: python -m pip install --no-deps dist/*.whl
       - name: Run the non-blocking upcoming compatibility check
         run: python -m pytest -q
+
+  required-compatibility:
+    name: required-compatibility
+    if: ${{ always() }}
+    needs: [supported]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the supported compatibility matrix
+        env:
+          COMPATIBILITY_RESULT: ${{ needs.supported.result }}
+        run: test "$COMPATIBILITY_RESULT" = success
