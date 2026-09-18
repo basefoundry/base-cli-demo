@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from collections.abc import Mapping
 from importlib.resources import files
+from pathlib import Path
 from typing import Any
 
 import base_cli
@@ -92,18 +95,51 @@ def _persist_reconciliation(
         return
 
     state_path = context.state_dir / "last-reconciliation.json"
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    state_path.write_text(
-        json.dumps(dict(record), sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    staged_path: Path | None = None
+    try:
+        serialized = _serialize_reconciliation(record)
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=state_path.parent,
+            prefix=f".{state_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as staged:
+            staged_path = Path(staged.name)
+            staged.write(serialized)
+            staged.flush()
+            os.fsync(staged.fileno())
 
-    temporary_input = context.temp_dir / "reconciliation-input.json"
-    temporary_input.write_text(
-        json.dumps(dict(record), sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
+        temporary_input = context.temp_dir / "reconciliation-input.json"
+        temporary_input.write_text(serialized, encoding="utf-8")
+        context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
+        _replace_state(staged_path, state_path)
+        staged_path = None
+    except (OSError, TypeError, ValueError) as exc:
+        raise click.ClickException(
+            "Could not persist the reconciliation snapshot; the previous "
+            "snapshot was left unchanged."
+        ) from exc
+    finally:
+        if staged_path is not None:
+            try:
+                staged_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+def _serialize_reconciliation(record: Mapping[str, Any]) -> str:
+    """Serialize once so both local artifacts describe the same snapshot."""
+
+    return json.dumps(dict(record), sort_keys=True) + "\n"
+
+
+def _replace_state(staged_path: Path, state_path: Path) -> None:
+    """Atomically publish a complete snapshot from the same filesystem."""
+
+    os.replace(staged_path, state_path)
 
 
 def _service_option(function: Any) -> Any:
