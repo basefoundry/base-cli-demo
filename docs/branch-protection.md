@@ -1,9 +1,9 @@
 # Required Pull Request Checks
 
-The default branch should require these stable GitHub Actions check contexts:
+The default branch should require these stable GitHub Actions check names:
 
-- `Tests / required-consumer`
-- `Compatibility / required-compatibility`
+- `required-consumer`
+- `required-compatibility`
 
 The aggregate jobs always run and fail if their underlying validation job or
 supported-version matrix is skipped, cancelled, or unsuccessful. The optional
@@ -16,7 +16,7 @@ required approval count (or allow that maintainer to self-approve), while still
 requiring both checks to pass. Do not use a broad ruleset bypass for a failed or
 pending check.
 
-After this workflow change is merged, select both contexts in the
+After this workflow change is merged, select both exact job names in the
 `Base default branch protection` ruleset and read the ruleset back to confirm
 they are required. Until that external settings step is complete, this document
 and the workflow alone do not enforce the checks at merge time.
