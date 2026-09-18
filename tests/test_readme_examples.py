@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -11,15 +12,38 @@ from pathlib import Path
 import pytest
 
 
-def readme_commands() -> list[list[str]]:
+README_PATH = Path(__file__).parents[1] / "README.md"
+EXAMPLES_PATH = Path(__file__).parents[1] / "examples"
+
+
+def parse_readme_commands(markdown: str) -> list[list[str]]:
     commands: list[list[str]] = []
     in_shell_block = False
-    for line in Path("README.md").read_text(encoding="utf-8").splitlines():
-        if line.strip().startswith("```"):
-            in_shell_block = not in_shell_block
+    for line in markdown.splitlines():
+        fence = re.match(r"^\s*```([^`]*)", line)
+        if fence:
+            language = fence.group(1).strip().lower()
+            if in_shell_block:
+                in_shell_block = False
+            else:
+                in_shell_block = language in {"bash", "sh", "shell", "console"}
             continue
-        if in_shell_block and line.strip().startswith("northstar"):
-            commands.append(shlex.split(line.strip()))
+        if not in_shell_block:
+            continue
+        command_line = line.strip()
+        if command_line.startswith("$ "):
+            command_line = command_line[2:].lstrip()
+        if re.match(r"^northstar(?:-[a-z0-9-]+)?(?:\s|$)", command_line):
+            commands.append(shlex.split(command_line))
+    return commands
+
+
+def readme_commands() -> list[list[str]]:
+    commands = parse_readme_commands(README_PATH.read_text(encoding="utf-8"))
+    if len(commands) < 10:
+        raise AssertionError(
+            f"README command discovery found only {len(commands)} Northstar commands."
+        )
     return commands
 
 
@@ -40,6 +64,7 @@ def run_installed_command(
             "LOCALAPPDATA": str(home / "home" / "AppData" / "Local"),
         }
     )
+    shutil.copytree(EXAMPLES_PATH, home / "examples")
     return subprocess.run(
         [executable, *args[1:]],
         capture_output=True,
@@ -59,6 +84,20 @@ def test_readme_northstar_commands_run_from_the_installed_wheel(
     assert result.returncode == 0, (
         f"{args!r}\nstdout: {result.stdout}\nstderr: {result.stderr}"
     )
+
+
+def test_readme_command_parser_fails_closed_on_an_invalid_documented_command(
+    tmp_path: Path,
+) -> None:
+    markdown = README_PATH.read_text(encoding="utf-8").replace(
+        "$ northstar --help", "$ northstar --definitely-invalid"
+    )
+    commands = parse_readme_commands(markdown)
+    invalid = next(args for args in commands if "--definitely-invalid" in args)
+    result = run_installed_command(invalid, tmp_path)
+
+    assert result.returncode != 0
+    assert commands
 
 
 def test_readme_json_output_is_machine_readable(tmp_path: Path) -> None:
