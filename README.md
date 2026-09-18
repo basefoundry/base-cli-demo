@@ -9,10 +9,6 @@ command tree, domain policy, and local data model.
 Northstar does not require Base, Docker, cloud credentials, or network access
 after its dependencies are installed.
 
-**Framework resources:** [Base-CLI repository](https://github.com/basefoundry/base-cli) ·
-[getting started](https://github.com/basefoundry/base-cli#quick-start) ·
-[public API reference](https://github.com/basefoundry/base-cli/blob/main/docs/api-reference.md).
-
 ## Quick start
 
 From a fresh checkout:
@@ -119,6 +115,11 @@ Follow the [documentation index](docs/README.md) for an ordered path from
 adoption decision through the Northstar walkthrough, compatibility, and
 release. To start with a minimal consumer rather than the full demo, use the
 [copyable starter](docs/use-in-your-project.md).
+
+For framework-level material, start at the
+[Base-CLI repository](https://github.com/basefoundry/base-cli), its
+[getting-started guide](https://github.com/basefoundry/base-cli#quick-start),
+or the [public API reference](https://github.com/basefoundry/base-cli/blob/main/docs/api-reference.md).
 
 ## Repository shape
 
