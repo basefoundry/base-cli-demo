@@ -35,17 +35,21 @@ Releases.
    ```
 
 8. Verify the annotated tag and GitHub Release for `basefoundry/base-cli-demo`.
-9. The `Release package` workflow validates the tagged version, runs the
-   package gate, installs the built wheel, and uploads the wheel/source
-   distributions as a workflow artifact. Base's `basectl release publish`
-   remains the guarded publisher for GitHub Release notes; this demo workflow
-   does not imply a PyPI or Base-CLI release.
-10. Complete every declared downstream handoff. For Homebrew, update the tap
+9. After an explicitly authorized GitHub Release is published, the
+   `Published release assets` workflow tests the demo wheel against the minimum
+   and latest supported Base-CLI releases on Python 3.10 and 3.13. Only after
+   those checks pass does it attach the wheel, source distribution, exact
+   compatibility evidence, and SHA-256 checksums. It never creates a tag or
+   GitHub Release and does not imply a PyPI or Base-CLI release.
+10. Confirm the README's version-pinned installation path in a clean
+    environment, download the checksum/evidence files, and verify package
+    filenames and hashes against the published assets.
+11. Complete every declared downstream handoff. For Homebrew, update the tap
    formula to the published archive and checksum, run the formula tests and
    audit, publish required bottles, and verify install and upgrade paths. If a
    downstream repository pins this project by commit, update and validate that
    pin after the release.
-11. Record the release and downstream URLs on the release issue, then remove
+12. Record the release and downstream URLs on the release issue, then remove
     the release worktree and merged branches when safe.
 
 ## Repository Contract
