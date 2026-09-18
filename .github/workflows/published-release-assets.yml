@@ -1,23 +1,32 @@
-name: Published release assets
+name: Prepare draft release assets
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag for the draft release, for example v0.1.0
+        required: true
+        type: string
+      draft_release_id:
+        description: Numeric GitHub release ID of the unpublished draft for that tag
+        required: true
+        type: string
 
 permissions:
   contents: read
   actions: read
 
 concurrency:
-  group: published-release-assets-${{ github.event.release.tag_name }}
+  group: draft-release-assets-${{ inputs.tag }}
   cancel-in-progress: false
 
 jobs:
   compatibility:
-    if: ${{ github.event.release.prerelease == false }}
     name: ${{ matrix.base_cli.name }} / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -30,14 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.tag }}
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Verify the release tag matches VERSION
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: test "$(tr -d '[:space:]' < VERSION)" = "${RELEASE_TAG#v}"
       - name: Build the released demo wheel
         run: python -m pip wheel --no-deps --wheel-dir dist .
@@ -68,7 +75,6 @@ jobs:
           if-no-files-found: error
 
   assets:
-    if: ${{ github.event.release.prerelease == false }}
     needs: [compatibility]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -76,18 +82,24 @@ jobs:
       actions: read
       contents: write
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      DRAFT_RELEASE_ID: ${{ inputs.draft_release_id }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.tag }}
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
       - name: Verify the release tag matches VERSION
         run: test "$(tr -d '[:space:]' < VERSION)" = "${RELEASE_TAG#v}"
+      - name: Verify the selected release is an unpublished draft for this tag
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$DRAFT_RELEASE_ID" --jq '.draft')" = true
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$DRAFT_RELEASE_ID" --jq '.prerelease')" = false
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$DRAFT_RELEASE_ID" --jq '.tag_name')" = "$RELEASE_TAG"
       - name: Install package and release checks
         run: python -m pip install ".[dev]"
       - name: Run the authoritative consumer and package gates
@@ -112,5 +124,5 @@ jobs:
             find release-dist/compatibility-evidence -name compatibility.txt -print -exec cat {} \;
           } > release-dist/COMPATIBILITY.txt
           sha256sum release-dist/*.whl release-dist/*.tar.gz release-dist/COMPATIBILITY.txt > release-dist/SHA256SUMS.txt
-      - name: Attach release distributions, compatibility evidence, and checksums
-        run: gh release upload "$RELEASE_TAG" release-dist/*.whl release-dist/*.tar.gz release-dist/COMPATIBILITY.txt release-dist/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY"
+      - name: Attach verified assets to the unpublished draft
+        run: gh release upload "$RELEASE_TAG" release-dist/*.whl release-dist/*.tar.gz release-dist/COMPATIBILITY.txt release-dist/SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"

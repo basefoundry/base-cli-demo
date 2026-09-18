@@ -1,9 +1,9 @@
 # Release Process
 
 This repository uses the Base release contract. The machine-readable release
-metadata lives in `base_manifest.yaml`; the guarded `basectl release`
-commands use that contract for readiness checks, notes, tags, and GitHub
-Releases.
+metadata lives in `base_manifest.yaml`; `basectl release check/plan/notes` use
+that contract for readiness and release notes. GitHub immutable releases must
+be prepared as drafts so validated assets are attached before publication.
 
 ## Standard Sequence
 
@@ -23,24 +23,35 @@ Releases.
    ```bash
    basectl release check --version X.Y.Z
    basectl release plan --version X.Y.Z
-   basectl release notes --version X.Y.Z
+   basectl release notes --version X.Y.Z > RELEASE_NOTES.md
    basectl release publish --version X.Y.Z --dry-run
    ```
 
-7. Publish only after the checks pass. Use `--yes` only from a trusted
-   non-interactive release shell:
+7. After separate publication authorization, verify immutable releases are
+   enabled for the repository, then create the annotated version tag for the
+   exact reviewed `main` commit. Create a GitHub Release draft for that existing
+   tag and add the release notes from step 6 (`RELEASE_NOTES.md`). Do not run
+   `basectl release publish --yes` for this immutable-release path: it creates
+   a published release directly, leaving no draft stage for attaching the
+   validated assets.
 
    ```bash
-   basectl release publish --version X.Y.Z --yes
+   git tag -a vX.Y.Z -m "base-cli-demo vX.Y.Z"
+   git push origin vX.Y.Z
+   gh release create vX.Y.Z --verify-tag --draft --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
    ```
 
-8. Verify the annotated tag and GitHub Release for `basefoundry/base-cli-demo`.
-9. After an explicitly authorized GitHub Release is published, the
-   `Published release assets` workflow tests the demo wheel against the minimum
-   and latest supported Base-CLI releases on Python 3.10 and 3.13. Only after
-   those checks pass does it attach the wheel, source distribution, exact
-   compatibility evidence, and SHA-256 checksums. It never creates a tag or
-   GitHub Release and does not imply a PyPI or Base-CLI release.
+8. Dispatch `Prepare draft release assets` with the tag and draft release ID
+   (`gh release view vX.Y.Z --json databaseId --jq .databaseId`). The workflow
+   verifies that the selected release is still a draft for that tag, tests the
+   wheel against the minimum and latest supported Base-CLI releases on Python
+   3.10 and 3.13, then attaches the wheel, sdist, exact compatibility evidence,
+   and SHA-256 checksums. It never creates a tag or release and never publishes
+   the draft.
+9. Review the draft assets and verify the repository has immutable releases
+   enabled. Then publish the draft in GitHub. When immutable releases are
+   enabled, GitHub locks the tag and assets at publication; see the official
+   [immutable releases guidance](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).
 10. Confirm the README's version-pinned installation path in a clean
     environment, download the checksum/evidence files, and verify package
     filenames and hashes against the published assets.
