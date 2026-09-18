@@ -60,6 +60,8 @@ boundary explained beside each scenario, see the
   the supported Base-CLI range and the installed-wheel CI gate.
 - The [optional integration scenarios](docs/optional-integrations.md) show
   Typer, Rich, and OpenTelemetry without making them core dependencies.
+- The [YAML output guide](docs/yaml-output.md) explains its optional renderer
+  extra and the preflight behavior when it is absent.
 - The [release process](docs/release-process.md) covers reproducible wheel and
   source-distribution validation separately from Base-CLI versioning.
 
