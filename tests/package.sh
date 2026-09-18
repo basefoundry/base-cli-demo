@@ -19,12 +19,21 @@ import sys
 import tarfile
 import zipfile
 from pathlib import Path
+from email.parser import Parser
+
+sys.path.insert(0, str(Path("tests").resolve()))
+from version_identity import assert_versions_match
 
 wheel_path = Path(sys.argv[1])
 sdist_path = Path(sys.argv[2])
+expected_version = Path("VERSION").read_text(encoding="utf-8").strip()
 
 with zipfile.ZipFile(wheel_path) as wheel:
     wheel_names = set(wheel.namelist())
+    metadata_name = next(
+        name for name in wheel_names if name.endswith(".dist-info/METADATA")
+    )
+    wheel_metadata = Parser().parsestr(wheel.read(metadata_name).decode("utf-8"))
 required_wheel_files = {
     "base_cli_demo/__init__.py",
     "base_cli_demo/cli.py",
@@ -36,16 +45,31 @@ if missing_wheel:
 
 with tarfile.open(sdist_path, "r:gz") as sdist:
     sdist_names = set(sdist.getnames())
+    sdist_metadata_name = next(
+        name for name in sdist_names if name.endswith("/PKG-INFO")
+    )
+    sdist_metadata = Parser().parsestr(
+        sdist.extractfile(sdist_metadata_name).read().decode("utf-8")
+    )
 sdist_root = sdist_path.name.removesuffix(".tar.gz")
 required_sdist_files = {
     f"{sdist_root}/README.md",
     f"{sdist_root}/pyproject.toml",
+    f"{sdist_root}/VERSION",
     f"{sdist_root}/src/base_cli_demo/cli.py",
     f"{sdist_root}/src/base_cli_demo/fixtures/services.json",
 }
 missing_sdist = required_sdist_files - sdist_names
 if missing_sdist:
     raise SystemExit(f"Source distribution is missing: {sorted(missing_sdist)}")
+
+assert_versions_match(
+    expected_version,
+    **{
+        "wheel metadata": wheel_metadata["Version"],
+        "sdist metadata": sdist_metadata["Version"],
+    },
+)
 
 print(f"Validated {wheel_path.name} and {sdist_path.name}.")
 PY

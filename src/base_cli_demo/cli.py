@@ -10,6 +10,7 @@ from typing import Any
 import base_cli
 import click
 
+from . import __version__
 from .profile import get_config, northstar_profile
 
 SERVICE_NAMES = ("orders-api", "billing-worker", "web")
@@ -302,7 +303,7 @@ def show_config(output_format: str) -> None:
 
 app = base_cli.App(
     name="northstar",
-    version="0.1.0",
+    version=__version__,
     profile=northstar_profile(),
     lifecycle_options=base_cli.LifecycleOptions(
         environment=base_cli.LifecycleOption(

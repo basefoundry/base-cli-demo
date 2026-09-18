@@ -35,7 +35,19 @@ jobs:
             expected="${GITHUB_REF_NAME#v}"
           fi
           test -n "$expected"
-          test "$(tr -d '[:space:]' < VERSION)" = "$expected"
+          PYTHONPATH=tests EXPECTED_VERSION="$expected" RELEASE_TAG="$GITHUB_REF_NAME" python - <<'PY'
+          import os
+          from pathlib import Path
+          from version_identity import assert_versions_match
+
+          expected = os.environ["EXPECTED_VERSION"]
+          raw_tag = os.environ["RELEASE_TAG"]
+          source_version = Path("VERSION").read_text(encoding="utf-8").strip()
+          representations = {"VERSION": source_version}
+          if raw_tag.startswith("v"):
+              representations["tag"] = raw_tag.removeprefix("v")
+          assert_versions_match(expected, **representations)
+          PY
       - name: Validate repository baseline
         run: ./tests/validate.sh
       - name: Validate clean package contents
