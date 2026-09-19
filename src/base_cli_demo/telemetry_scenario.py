@@ -2,28 +2,33 @@
 
 from __future__ import annotations
 
-import importlib.util
+from typing import Any
 
 import base_cli
 import click
 
-API_AVAILABLE = importlib.util.find_spec("opentelemetry") is not None
-SDK_AVAILABLE = API_AVAILABLE and importlib.util.find_spec("opentelemetry.sdk") is not None
-TELEMETRY_AVAILABLE = SDK_AVAILABLE
+def _configure_telemetry() -> tuple[Any | None, Any | None]:
+    """Create the demo SDK objects without making import failures fatal."""
 
-if SDK_AVAILABLE:
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
-    from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
-        InMemorySpanExporter,
-    )
+    try:
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+        from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+            InMemorySpanExporter,
+        )
 
-    SPAN_EXPORTER = InMemorySpanExporter()
-    TRACER_PROVIDER = TracerProvider()
-    TRACER_PROVIDER.add_span_processor(SimpleSpanProcessor(SPAN_EXPORTER))
-else:
-    SPAN_EXPORTER = None
-    TRACER_PROVIDER = None
+        exporter = InMemorySpanExporter()
+        provider = TracerProvider()
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
+        return exporter, provider
+    except BaseException:
+        # Optional integration setup must not change the consumer's normal
+        # command behavior when the plugin is missing or broken.
+        return None, None
+
+
+SPAN_EXPORTER, TRACER_PROVIDER = _configure_telemetry()
+TELEMETRY_AVAILABLE = SPAN_EXPORTER is not None and TRACER_PROVIDER is not None
 
 
 @click.command(name="northstar-telemetry", help="Run the optional telemetry scenario.")
@@ -41,7 +46,7 @@ app = base_cli.App(
     log_to_file=False,
     telemetry=(
         base_cli.TelemetryOptions(tracer_provider=TRACER_PROVIDER)
-        if SDK_AVAILABLE
+        if TELEMETRY_AVAILABLE
         else None
     ),
 )
@@ -53,11 +58,17 @@ def main() -> int:
 
     exit_code = base_cli.run_app(command)
     if SPAN_EXPORTER is not None and TRACER_PROVIDER is not None:
-        TRACER_PROVIDER.force_flush()
-        spans = SPAN_EXPORTER.get_finished_spans()
-        click.echo(f"recorded_spans={len(spans)}")
-        for span in spans:
-            click.echo(f"span={span.name} status={span.status.status_code.name}")
+        try:
+            TRACER_PROVIDER.force_flush()
+            spans = SPAN_EXPORTER.get_finished_spans()
+            click.echo(f"recorded_spans={len(spans)}")
+            for span in spans:
+                click.echo(f"span={span.name} status={span.status.status_code.name}")
+        except BaseException:
+            # Exporter teardown is best-effort after the command outcome is
+            # already known; it must not turn a successful invocation into a
+            # failed CLI run.
+            pass
     return exit_code
 
 
