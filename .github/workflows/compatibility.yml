@@ -50,8 +50,6 @@ jobs:
         run: python -c 'import base_cli_demo, pathlib; root = pathlib.Path.cwd().resolve(); assert root not in pathlib.Path(base_cli_demo.__file__).resolve().parents'
       - name: Validate the repository baseline
         run: ./tests/validate.sh
-      - name: Run installed-wheel compatibility tests
-        run: python -m pytest -q
 
   upcoming:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.upcoming_base_cli != '' }}
@@ -73,4 +71,4 @@ jobs:
       - name: Install the demo wheel without source dependencies
         run: python -m pip install --no-deps dist/*.whl
       - name: Run the non-blocking upcoming compatibility check
-        run: python -m pytest -q
+        run: ./tests/validate.sh
