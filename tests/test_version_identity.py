@@ -8,13 +8,13 @@ import pytest
 import base_cli
 
 from base_cli_demo import __version__
-from version_identity import assert_versions_match
+from version_identity import assert_versions_match, source_version
 
 
 def test_source_version_matches_installed_metadata_and_cli() -> None:
     from base_cli_demo.cli import command
 
-    expected = Path("VERSION").read_text(encoding="utf-8").strip()
+    expected = source_version()
     with TemporaryDirectory() as directory:
         result = base_cli.testing.invoke(
             command, ["--quiet", "--version"], home=Path(directory)

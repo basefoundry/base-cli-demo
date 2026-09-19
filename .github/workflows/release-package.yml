@@ -29,25 +29,7 @@ jobs:
       - name: Install package and release checks
         run: python -m pip install ".[dev]"
       - name: Verify release version
-        run: |
-          expected="$RELEASE_VERSION"
-          if [[ -z "$expected" ]]; then
-            expected="${GITHUB_REF_NAME#v}"
-          fi
-          test -n "$expected"
-          PYTHONPATH=tests EXPECTED_VERSION="$expected" RELEASE_TAG="$GITHUB_REF_NAME" python - <<'PY'
-          import os
-          from pathlib import Path
-          from version_identity import assert_versions_match
-
-          expected = os.environ["EXPECTED_VERSION"]
-          raw_tag = os.environ["RELEASE_TAG"]
-          source_version = Path("VERSION").read_text(encoding="utf-8").strip()
-          representations = {"VERSION": source_version}
-          if raw_tag.startswith("v"):
-              representations["tag"] = raw_tag.removeprefix("v")
-          assert_versions_match(expected, **representations)
-          PY
+        run: ./tests/verify_release_version.sh
       - name: Validate repository baseline
         run: ./tests/validate.sh
       - name: Validate clean package contents
