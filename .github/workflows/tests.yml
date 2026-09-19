@@ -39,3 +39,14 @@ jobs:
         run: python -m pip install ".[dev,typer,rich,telemetry,yaml]"
       - name: Run optional integration and YAML renderer tests
         run: python -m pytest -q tests/test_optional_scenarios.py tests/test_yaml_output.py
+
+  required-consumer:
+    name: required-consumer
+    if: ${{ always() }}
+    needs: [validate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the consumer validation job
+        env:
+          VALIDATION_RESULT: ${{ needs.validate.result }}
+        run: test "$VALIDATION_RESULT" = success
