@@ -57,6 +57,10 @@ For a guided five-minute walkthrough with expected output and the framework
 boundary explained beside each scenario, see the
 [scenario-driven learning path](docs/learning-path.md).
 
+Deciding whether this framework fits your project? Read the
+[adoption decision guide](docs/should-i-use-base-cli.md) for its current
+stability, trade-offs, and alternatives.
+
 ## What this demonstrates
 
 - `northstar status` reads consumer-owned, deterministic service fixtures.
