@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
+import stat
+import tempfile
 from collections.abc import Mapping
 from importlib import import_module
 from importlib.resources import files
+from pathlib import Path
 from typing import Any
 
 import base_cli
@@ -116,18 +120,77 @@ def _persist_reconciliation(
         return
 
     state_path = context.state_dir / "last-reconciliation.json"
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    state_path.write_text(
-        json.dumps(dict(record), sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    had_previous_snapshot = state_path.exists()
+    staged_path: Path | None = None
+    try:
+        serialized = _serialize_reconciliation(record)
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=state_path.parent,
+            prefix=f".{state_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as staged:
+            staged_path = Path(staged.name)
+            staged.write(serialized)
+            staged.flush()
+            os.fsync(staged.fileno())
 
-    temporary_input = context.temp_dir / "reconciliation-input.json"
-    temporary_input.write_text(
-        json.dumps(dict(record), sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
+        _preserve_state_mode(staged_path, state_path)
+        temporary_input = context.temp_dir / "reconciliation-input.json"
+        temporary_input.write_text(serialized, encoding="utf-8")
+        context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
+        _replace_state(staged_path, state_path)
+        staged_path = None
+    except (OSError, TypeError, ValueError) as exc:
+        snapshot_message = (
+            "the previous snapshot was left unchanged."
+            if had_previous_snapshot
+            else "no reconciliation snapshot was published."
+        )
+        raise click.ClickException(
+            f"Could not persist the reconciliation snapshot; {snapshot_message}"
+        ) from exc
+    finally:
+        if staged_path is not None:
+            try:
+                staged_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+def _serialize_reconciliation(record: Mapping[str, Any]) -> str:
+    """Serialize once so both local artifacts describe the same snapshot."""
+
+    return json.dumps(dict(record), sort_keys=True) + "\n"
+
+
+def _replace_state(staged_path: Path, state_path: Path) -> None:
+    """Atomically publish a complete snapshot from the same filesystem."""
+
+    os.replace(staged_path, state_path)
+    try:
+        directory_fd = os.open(state_path.parent, os.O_RDONLY)
+    except OSError:
+        if os.name != "nt":
+            raise
+        return
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
+def _preserve_state_mode(staged_path: Path, state_path: Path) -> None:
+    """Keep an existing snapshot's permissions across atomic replacement."""
+
+    try:
+        mode = stat.S_IMODE(state_path.stat().st_mode)
+    except FileNotFoundError:
+        return
+    os.chmod(staged_path, mode)
 
 
 def _service_option(function: Any) -> Any:

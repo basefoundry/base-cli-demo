@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import stat
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 import base_cli
+import base_cli_demo.cli as cli_module
 
 from base_cli_demo.cli import command
 
@@ -141,6 +145,99 @@ def test_reconcile_persists_state_and_cleans_temporary_input() -> None:
             == "reconciled"
         )
         assert list(root.rglob("reconciliation-input.json")) == []
+
+
+def test_reconcile_preserves_existing_snapshot_permissions() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        os_mode = 0o640
+        state_path.chmod(os_mode)
+
+        second = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+
+        assert second.exit_code == 0, second.output
+        assert stat.S_IMODE(state_path.stat().st_mode) == os_mode
+
+
+def test_failed_atomic_replace_preserves_the_previous_snapshot(
+    monkeypatch: Any,
+) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        previous = state_path.read_bytes()
+
+        def fail_replace(_staged_path: Path, _state_path: Path) -> None:
+            raise OSError("simulated replace failure")
+
+        monkeypatch.setattr(cli_module, "_replace_state", fail_replace)
+        failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
+
+        assert failed.exit_code == 1
+        assert "previous snapshot was left unchanged" in failed.output
+        assert state_path.read_bytes() == previous
+        assert not list(state_path.parent.glob(f".{state_path.name}.*.tmp"))
+
+
+def test_serialization_failure_preserves_the_previous_snapshot(monkeypatch: Any) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        previous = state_path.read_bytes()
+
+        def fail_serialization(_record: Any) -> str:
+            raise TypeError("simulated serialization failure")
+
+        monkeypatch.setattr(cli_module, "_serialize_reconciliation", fail_serialization)
+        failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
+
+        assert failed.exit_code == 1
+        assert state_path.read_bytes() == previous
+
+
+def test_concurrent_public_reconciliations_leave_a_complete_snapshot() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        initial = invoke(["release", "reconcile"], root)
+        assert initial.exit_code == 0, initial.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        stop_reader = threading.Event()
+        reader_errors: list[BaseException] = []
+
+        def read_while_writing() -> None:
+            while not stop_reader.is_set():
+                try:
+                    json.loads(state_path.read_text(encoding="utf-8"))
+                except BaseException as exc:  # captured for assertion in the test thread
+                    reader_errors.append(exc)
+                    stop_reader.set()
+
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            reader = pool.submit(read_while_writing)
+            futures = [
+                pool.submit(
+                    invoke,
+                    ["release", "reconcile", "--version", f"2.{minor}.0"],
+                    root,
+                )
+                for minor in range(8, 12)
+            ]
+            results = [future.result() for future in futures]
+            stop_reader.set()
+            reader.result()
+
+        assert not reader_errors
+        assert all(result.exit_code == 0 for result in results)
+        final = json.loads(state_path.read_text(encoding="utf-8"))
+        assert final["action"] == "reconciled"
+        assert final["target_version"] in {f"2.{minor}.0" for minor in range(8, 12)}
 
 
 def test_json_error_envelope_preserves_nonzero_exit_status() -> None:
