@@ -9,6 +9,22 @@ command tree, domain policy, and local data model.
 Northstar does not require Base, Docker, cloud credentials, or network access
 after its dependencies are installed.
 
+## Why base-cli?
+
+Click gives Northstar its command tree; Base-CLI adds the shared work around
+each invocation so the application does not have to build and maintain its own
+logging lifecycle, runtime paths, cleanup hooks, and machine-output contract.
+That is useful when a CLI is used by both people and automation, especially
+when commands need predictable JSON, actionable errors, safe diagnostics, or
+dry-run behavior. For a one-off command without those needs, plain Click may be
+the simpler choice.
+
+In this demo, [`src/base_cli_demo/cli.py`](src/base_cli_demo/cli.py) owns the
+Northstar commands and service policy. Its `base_cli.App`, `app.attach(...)`,
+and `base_cli.run_app(...)` wiring delegates the invocation lifecycle to the
+framework; `status` and `release reconcile` show that boundary in use. See the
+[full value and responsibility map](docs/why-base-cli.md).
+
 ## Quick start
 
 From a fresh checkout:
