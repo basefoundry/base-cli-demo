@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from importlib import import_module
 from importlib.resources import files
-from importlib.util import find_spec
 from typing import Any
 
 import base_cli
@@ -25,11 +25,20 @@ def _check_format_dependency(
 ) -> str:
     """Reject unavailable optional renderers before command side effects."""
 
-    if value.lower() == "yaml" and find_spec("yaml") is None:
-        raise click.ClickException(
-            "YAML output requires the optional renderer; install it with "
-            "`python -m pip install 'base-cli-demo[yaml]'`."
-        )
+    if value.lower() == "yaml":
+        try:
+            yaml = import_module("yaml")
+            safe_dump = getattr(yaml, "safe_dump", None)
+            if not callable(safe_dump):
+                raise ImportError("PyYAML does not expose safe_dump")
+            # Exercise the same serializer entry point used by Base-CLI so a
+            # broken or shadowing module is rejected before reconciliation.
+            safe_dump([], sort_keys=False, allow_unicode=True)
+        except Exception as exc:
+            raise click.ClickException(
+                "YAML output requires the optional renderer; install it with "
+                "`python -m pip install 'base-cli-demo[yaml]'`."
+            ) from exc
     return value
 
 
