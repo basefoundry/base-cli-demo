@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from importlib import import_module
 from importlib.resources import files
 from typing import Any
 
@@ -17,6 +18,28 @@ OUTPUT_FORMAT = click.Choice(
     base_cli.output_format_choices().split("|"),
     case_sensitive=False,
 )
+
+
+def _check_format_dependency(
+    _context: click.Context, _parameter: click.Parameter, value: str
+) -> str:
+    """Reject unavailable optional renderers before command side effects."""
+
+    if value.lower() == "yaml":
+        try:
+            yaml = import_module("yaml")
+            safe_dump = getattr(yaml, "safe_dump", None)
+            if not callable(safe_dump):
+                raise ImportError("PyYAML does not expose safe_dump")
+            # Exercise the same serializer entry point used by Base-CLI so a
+            # broken or shadowing module is rejected before reconciliation.
+            safe_dump([], sort_keys=False, allow_unicode=True)
+        except Exception as exc:
+            raise click.ClickException(
+                "YAML output requires the optional renderer; install it with "
+                "`python -m pip install 'base-cli-demo[yaml]'`."
+            ) from exc
+    return value
 
 
 def _load_services() -> tuple[dict[str, str], ...]:
@@ -124,6 +147,7 @@ def _format_option(function: Any) -> Any:
         default="text",
         show_default=True,
         help="Render text, CSV, TSV, YAML, JSON, or NDJSON.",
+        callback=_check_format_dependency,
     )(function)
 
 
