@@ -4,19 +4,42 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from importlib import import_module
 from importlib.resources import files
 from typing import Any
 
 import base_cli
 import click
 
-from .profile import get_config, northstar_profile
+from .profile import get_config, northstar_profile, normalize_release_version
 
 SERVICE_NAMES = ("orders-api", "billing-worker", "web")
 OUTPUT_FORMAT = click.Choice(
     base_cli.output_format_choices().split("|"),
     case_sensitive=False,
 )
+
+
+def _check_format_dependency(
+    _context: click.Context, _parameter: click.Parameter, value: str
+) -> str:
+    """Reject unavailable optional renderers before command side effects."""
+
+    if value.lower() == "yaml":
+        try:
+            yaml = import_module("yaml")
+            safe_dump = getattr(yaml, "safe_dump", None)
+            if not callable(safe_dump):
+                raise ImportError("PyYAML does not expose safe_dump")
+            # Exercise the same serializer entry point used by Base-CLI so a
+            # broken or shadowing module is rejected before reconciliation.
+            safe_dump([], sort_keys=False, allow_unicode=True)
+        except Exception as exc:
+            raise click.ClickException(
+                "YAML output requires the optional renderer; install it with "
+                "`python -m pip install 'base-cli-demo[yaml]'`."
+            ) from exc
+    return value
 
 
 def _load_services() -> tuple[dict[str, str], ...]:
@@ -124,7 +147,21 @@ def _format_option(function: Any) -> Any:
         default="text",
         show_default=True,
         help="Render text, CSV, TSV, YAML, JSON, or NDJSON.",
+        callback=_check_format_dependency,
     )(function)
+
+
+def _release_version_option(
+    context: click.Context, parameter: click.Parameter, value: str | None
+) -> str | None:
+    """Normalize overrides with the same policy used by consumer config."""
+
+    if value is None:
+        return None
+    try:
+        return normalize_release_version(value)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), ctx=context, param=parameter) from exc
 
 
 @click.group(
@@ -180,6 +217,7 @@ def release() -> None:
     "target_version",
     default=None,
     help="Override the configured target release version.",
+    callback=_release_version_option,
 )
 @_service_option
 def plan(service: str, target_version: str | None, output_format: str) -> None:
@@ -225,6 +263,7 @@ def plan(service: str, target_version: str | None, output_format: str) -> None:
     "target_version",
     default=None,
     help="Override the configured target release version.",
+    callback=_release_version_option,
 )
 @_service_option
 @click.option(

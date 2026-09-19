@@ -9,6 +9,22 @@ command tree, domain policy, and local data model.
 Northstar does not require Base, Docker, cloud credentials, or network access
 after its dependencies are installed.
 
+## Why base-cli?
+
+Click gives Northstar its command tree; Base-CLI adds the shared work around
+each invocation so the application does not have to build and maintain its own
+logging lifecycle, runtime paths, cleanup hooks, and machine-output contract.
+That is useful when a CLI is used by both people and automation, especially
+when commands need predictable JSON, actionable errors, safe diagnostics, or
+dry-run behavior. For a one-off command without those needs, plain Click may be
+the simpler choice.
+
+In this demo, [`src/base_cli_demo/cli.py`](src/base_cli_demo/cli.py) owns the
+Northstar commands and service policy. Its `base_cli.App`, `app.attach(...)`,
+and `base_cli.run_app(...)` wiring delegates the invocation lifecycle to the
+framework; `status` and `release reconcile` show that boundary in use. See the
+[full value and responsibility map](docs/why-base-cli.md).
+
 ## Quick start
 
 From a fresh checkout:
@@ -41,6 +57,10 @@ For a guided five-minute walkthrough with expected output and the framework
 boundary explained beside each scenario, see the
 [scenario-driven learning path](docs/learning-path.md).
 
+Deciding whether this framework fits your project? Read the
+[adoption decision guide](docs/should-i-use-base-cli.md) for its current
+stability, trade-offs, and alternatives.
+
 ## What this demonstrates
 
 - `northstar status` reads consumer-owned, deterministic service fixtures.
@@ -60,6 +80,8 @@ boundary explained beside each scenario, see the
   the supported Base-CLI range and the installed-wheel CI gate.
 - The [optional integration scenarios](docs/optional-integrations.md) show
   Typer, Rich, and OpenTelemetry without making them core dependencies.
+- The [YAML output guide](docs/yaml-output.md) explains its optional renderer
+  extra and the preflight behavior when it is absent.
 - The [release process](docs/release-process.md) covers reproducible wheel and
   source-distribution validation separately from Base-CLI versioning.
 
@@ -97,17 +119,30 @@ profile boundary.
 
 ## Development
 
-Install the development extra and run the focused suite:
+Install the development extra and run the authoritative consumer gate (which
+checks the installed environment and runs the complete suite, including the
+documented-command smoke tests):
 
 ```bash
 python -m pip install ".[dev]"
-python -m pytest
 ./tests/validate.sh
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
 to `>=0.4.3,<0.5`. This checkout targets demo release `v0.1.0`; demo release
 versioning remains separate from framework versioning.
+
+## Documentation
+
+Follow the [documentation index](docs/README.md) for an ordered path from
+adoption decision through the Northstar walkthrough, compatibility, and
+release. To start with a minimal consumer rather than the full demo, use the
+[copyable starter](docs/use-in-your-project.md).
+
+For framework-level material, start at the
+[Base-CLI repository](https://github.com/basefoundry/base-cli), its
+[getting-started guide](https://github.com/basefoundry/base-cli#quick-start),
+or the [public API reference](https://github.com/basefoundry/base-cli/blob/main/docs/api-reference.md).
 
 ## Repository shape
 

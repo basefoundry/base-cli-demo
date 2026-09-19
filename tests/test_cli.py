@@ -229,6 +229,60 @@ def test_explicit_consumer_config_filters_and_sets_release_default() -> None:
     assert {record["target_version"] for record in records} == {"2.6.0"}
 
 
+def test_release_version_override_uses_the_config_non_empty_string_policy() -> None:
+    for command_name in ("plan", "reconcile"):
+        with tempfile.TemporaryDirectory() as directory:
+            result = invoke(
+                ["release", command_name, "--version", "   "], Path(directory)
+            )
+
+        assert result.exit_code == 2
+        assert "non-empty string" in result.output
+        assert "Traceback" not in result.output
+
+
+def test_release_version_override_preserves_arbitrary_non_empty_strings() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        result = invoke(
+            ["release", "plan", "--version", "  release candidate  ", "--format", "json"],
+            Path(directory),
+        )
+
+    assert result.exit_code == 0, result.output
+    assert {row["target_version"] for row in json.loads(result.stdout)} == {
+        "release candidate"
+    }
+
+
+def test_invalid_utf8_config_is_a_safe_configuration_error() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        config_path = root / "invalid-encoding.json"
+        config_path.write_bytes(b'{"release_version":"\xff"}')
+        result = invoke(["--config", str(config_path), "status"], root / "home")
+
+    assert result.exit_code == 2
+    assert "as UTF-8" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_config_release_version_uses_the_same_non_empty_string_policy() -> None:
+    for invalid in ("", "   "):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "invalid-version.json"
+            config_path.write_text(
+                json.dumps({"release_version": invalid}), encoding="utf-8"
+            )
+            result = invoke(
+                ["--config", str(config_path), "release", "plan"], root / "home"
+            )
+
+        assert result.exit_code == 2
+        assert "non-empty string" in result.output
+        assert "Traceback" not in result.output
+
+
 def test_invalid_consumer_config_is_a_safe_configuration_error() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
