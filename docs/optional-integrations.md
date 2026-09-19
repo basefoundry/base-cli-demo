@@ -41,7 +41,7 @@ $ northstar-rich --quiet status --format json
 
 ## OpenTelemetry
 
-Install the optional API package to enable the lifecycle integration:
+Install the optional API and SDK packages to record the lifecycle integration:
 
 ```console
 $ python -m pip install ".[telemetry]"
@@ -51,8 +51,9 @@ telemetry=enabled
 
 Without the extra, the command reports `telemetry=unavailable (install
 [telemetry])` and still exits successfully. With the extra, Base-CLI owns the
-`base_cli.run` lifecycle span and its bounded safe attributes; the scenario
-does not attach argv, configuration, paths, or secrets.
+`base_cli.run` lifecycle span and its bounded safe attributes. The scenario
+records the span in an in-memory exporter and prints its name/status; it does
+not attach argv, configuration, paths, or secrets.
 
 The focused tests run in both modes: the normal CI job exercises the minimal
 fallbacks, while the optional-integration CI job installs all three extras and
