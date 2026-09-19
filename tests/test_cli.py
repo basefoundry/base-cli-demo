@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import stat
 import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -131,6 +132,21 @@ def test_reconcile_persists_state_and_cleans_temporary_input() -> None:
             == "reconciled"
         )
         assert list(root.rglob("reconciliation-input.json")) == []
+
+
+def test_reconcile_preserves_existing_snapshot_permissions() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        os_mode = 0o640
+        state_path.chmod(os_mode)
+
+        second = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+
+        assert second.exit_code == 0, second.output
+        assert stat.S_IMODE(state_path.stat().st_mode) == os_mode
 
 
 def test_failed_atomic_replace_preserves_the_previous_snapshot(
