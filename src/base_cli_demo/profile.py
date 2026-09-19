@@ -11,12 +11,26 @@ from typing import Any
 import base_cli
 
 
-def normalize_release_version(value: object) -> str:
-    """Apply Northstar's non-empty-string policy to config and CLI values."""
+def normalize_non_empty_string(value: object, *, label: str) -> str:
+    """Apply Northstar's shared non-empty-string policy."""
 
     if not isinstance(value, str) or not value.strip():
-        raise ValueError("release version must be a non-empty string.")
+        raise ValueError(f"{label} must be a non-empty string.")
     return value.strip()
+
+
+def normalize_release_version(value: object) -> str:
+    """Apply Northstar's non-empty-string policy to release versions."""
+
+    return normalize_non_empty_string(value, label="release version")
+
+
+def normalize_service_owner(value: object) -> str | None:
+    """Apply the shared policy while allowing the unset owner filter."""
+
+    if value is None:
+        return None
+    return normalize_non_empty_string(value, label="service owner")
 
 
 @dataclass(frozen=True)
@@ -42,13 +56,12 @@ class NorthstarConfig:
                 f"Northstar config contains unsupported key(s): {names}."
             )
 
-        service_owner = values.get("service_owner")
-        if service_owner is not None:
-            if not isinstance(service_owner, str) or not service_owner.strip():
-                raise base_cli.ConfigurationError(
-                    "Northstar config key 'service_owner' must be a non-empty string or null."
-                )
-            service_owner = service_owner.strip()
+        try:
+            service_owner = normalize_service_owner(values.get("service_owner"))
+        except ValueError as exc:
+            raise base_cli.ConfigurationError(
+                "Northstar config key 'service_owner' must be a non-empty string or null."
+            ) from exc
 
         release_version = values.get("release_version", cls.release_version)
         try:
@@ -76,9 +89,13 @@ class NorthstarConfig:
 def _load_json(path: Path) -> dict[str, Any]:
     try:
         contents = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError) as exc:
+    except UnicodeDecodeError as exc:
         raise base_cli.ConfigurationError(
             f"Unable to read Northstar config file '{path}' as UTF-8: {exc}"
+        ) from exc
+    except OSError as exc:
+        raise base_cli.ConfigurationError(
+            f"Unable to read Northstar config file '{path}': {exc}"
         ) from exc
 
     try:
