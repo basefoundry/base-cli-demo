@@ -29,8 +29,8 @@ commands or consumers and needs a consistent operational contract across them:
   upgrades.
 
 The [Northstar walkthrough](learning-path.md) shows the smallest examples in
-this repository. The [framework boundary](why-base-cli.md) explains which
-decisions remain consumer-owned.
+this repository. The [framework boundary](../README.md#framework-boundary)
+explains which decisions remain consumer-owned.
 
 ## Poor fit
 
