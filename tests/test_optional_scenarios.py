@@ -13,6 +13,15 @@ from pathlib import Path
 import pytest
 
 
+def module_available(name: str) -> bool:
+    """Treat a missing parent package as an unavailable optional module."""
+
+    try:
+        return importlib.util.find_spec(name) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 def run_scenario(
     module: str, args: list[str], home: Path
 ) -> subprocess.CompletedProcess[str]:
@@ -97,7 +106,7 @@ def test_telemetry_reports_the_optional_state_without_affecting_exit_status(
 
 
 def test_telemetry_sdk_records_the_base_cli_lifecycle_span(tmp_path: Path) -> None:
-    if importlib.util.find_spec("opentelemetry.sdk") is None:
+    if not module_available("opentelemetry.sdk"):
         pytest.skip("OpenTelemetry SDK is installed by the optional telemetry extra")
 
     result = run_scenario("base_cli_demo.telemetry_scenario", ["--quiet"], tmp_path)
