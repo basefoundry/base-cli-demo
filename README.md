@@ -37,6 +37,19 @@ $ northstar --help
 $ northstar --quiet status
 ```
 
+### Install an existing release
+
+To install the first published demo release without cloning the repository:
+
+```bash
+python -m pip install \
+  "https://github.com/basefoundry/base-cli-demo/releases/download/v0.1.0/base_cli_demo-0.1.0-py3-none-any.whl"
+```
+
+Verify the artifact against `SHA256SUMS.txt` on the same GitHub Release. The
+wheel depends on the released `base-cli>=0.4.3,<0.5` API line; it does not
+install Base or require a Base workspace.
+
 The default environment is `dev`. Select another fixture environment with the
 framework lifecycle option:
 
