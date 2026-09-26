@@ -70,13 +70,13 @@ requires-dist = [
     { name = "base-cli", specifier = ">=0.4.3,<0.5" },
     { name = "base-cli", extras = ["yaml"], marker = "extra == 'yaml'", specifier = ">=0.4.3,<0.5" },
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.2,<2" },
-    { name = "click", specifier = ">=8.1,<9" },
+    { name = "click", specifier = ">=8.1,<8.6" },
     { name = "opentelemetry-api", marker = "extra == 'telemetry'", specifier = ">=1.24,<2" },
     { name = "opentelemetry-sdk", marker = "extra == 'telemetry'", specifier = ">=1.24,<2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<9" },
     { name = "rich", marker = "extra == 'rich'", specifier = ">=13.7,<15" },
     { name = "twine", marker = "extra == 'dev'", specifier = ">=5,<7" },
-    { name = "typer", marker = "extra == 'typer'", specifier = ">=0.12,<0.28" },
+    { name = "typer", marker = "extra == 'typer'", specifier = ">=0.25.1,<0.28" },
 ]
 provides-extras = ["dev", "typer", "rich", "yaml", "telemetry"]
 
