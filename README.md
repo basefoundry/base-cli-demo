@@ -47,8 +47,9 @@ python -m pip install \
 ```
 
 Verify the artifact against `SHA256SUMS.txt` on the same GitHub Release. The
-wheel depends on the released `base-cli>=0.4.3,<0.5` API line; it does not
-install Base or require a Base workspace.
+The published `v0.1.0` wheel depends on the released `base-cli>=0.4.3,<0.5`
+API line. The current source and next demo release target the
+`base-cli>=0.5.0,<0.6` line; neither installs Base or requires a Base workspace.
 
 The default environment is `dev`. Select another fixture environment with the
 framework lifecycle option:
@@ -142,8 +143,8 @@ python -m pip install ".[dev]"
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
-to `>=0.4.3,<0.5`. This checkout targets demo release `v0.1.0`; demo release
-versioning remains separate from framework versioning.
+to `>=0.5.0,<0.6`. This checkout targets the next demo release after `v0.1.0`;
+demo release versioning remains separate from framework versioning.
 
 ## Documentation
 

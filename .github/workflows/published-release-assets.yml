@@ -32,10 +32,10 @@ jobs:
       matrix:
         python-version: ["3.10", "3.13"]
         base_cli:
-          - name: minimum-0.4.3
-            spec: "==0.4.3"
+          - name: minimum-0.5.0
+            spec: "==0.5.0"
           - name: latest-supported
-            spec: ">=0.4.3,<0.5"
+            spec: ">=0.5.0,<0.6"
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -120,7 +120,7 @@ jobs:
         run: |
           {
             printf 'Release tag: %s\n' "$RELEASE_TAG"
-            printf 'Declared Base-CLI range: base-cli>=0.4.3,<0.5\n\n'
+            printf 'Declared Base-CLI range: base-cli>=0.5.0,<0.6\n\n'
             find release-dist/compatibility-evidence -name compatibility.txt -print -exec cat {} \;
           } > release-dist/COMPATIBILITY.txt
           sha256sum release-dist/*.whl release-dist/*.tar.gz release-dist/COMPATIBILITY.txt > release-dist/SHA256SUMS.txt

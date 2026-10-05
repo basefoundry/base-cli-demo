@@ -22,14 +22,10 @@ wheels = [
 
 [[package]]
 name = "base-cli"
-version = "0.4.3"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/85/aa/cb963f3a1e26b84e44992d2dd08a31539bd94454b4d26104f30e9d3d375a/base_cli-0.4.3.tar.gz", hash = "sha256:d9d05ff479c2f0ff03334a69f4f20cb17b2e1844d94e8727f837e5b8dfe3fc95", size = 320272, upload-time = "2026-08-29T04:19:08.582Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7b/d3/8ad3a107480e55b9ac956a84460616d9152c4ca7055c50acec12ca40785e/base_cli-0.4.3-py3-none-any.whl", hash = "sha256:b4bf684d164b9fdf31d1d0176dfcb5359cedf9b22434d6f6a5483243e27c9b89", size = 123477, upload-time = "2026-08-29T04:19:07.27Z" },
 ]
 
 [package.optional-dependencies]
@@ -67,8 +63,8 @@ yaml = [
 
 [package.metadata]
 requires-dist = [
-    { name = "base-cli", specifier = ">=0.4.3,<0.5" },
-    { name = "base-cli", extras = ["yaml"], marker = "extra == 'yaml'", specifier = ">=0.4.3,<0.5" },
+    { name = "base-cli", specifier = ">=0.5.0,<0.6" },
+    { name = "base-cli", extras = ["yaml"], marker = "extra == 'yaml'", specifier = ">=0.5.0,<0.6" },
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.2,<2" },
     { name = "click", specifier = ">=8.1,<8.6" },
     { name = "opentelemetry-api", marker = "extra == 'telemetry'", specifier = ">=1.24,<2" },

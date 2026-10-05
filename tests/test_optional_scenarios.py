@@ -114,7 +114,7 @@ def test_telemetry_sdk_records_the_base_cli_lifecycle_span(tmp_path: Path) -> No
     assert result.returncode == 0, result.stderr
     assert "recorded_spans=1" in result.stdout
     assert "span=base_cli.run" in result.stdout
-    assert "status=UNSET" in result.stdout
+    assert "status=OK" in result.stdout
 
 
 def test_rich_human_renderer_runs_on_a_real_terminal(tmp_path: Path) -> None:

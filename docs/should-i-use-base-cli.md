@@ -2,9 +2,9 @@
 
 ## Status and compatibility
 
-As of this guide, the newest published Base-CLI release is `0.4.3`; the package
-is pre-1.0 and classified as Beta. The demo currently tests the released
-`>=0.4.3,<0.5` line. This is not a promise that every future pre-1.0 minor line
+As of this guide, the target Base-CLI release is `0.5.0`; the package is pre-1.0
+and classified as Beta. The demo tests the released `>=0.5.0,<0.6` line. This
+is not a promise that every future pre-1.0 minor line
 is compatible: Base-CLI's published policy treats patch releases as compatible
 and allows a minor release before 1.0 to be a compatibility boundary. Read the
 [API stability policy](https://github.com/basefoundry/base-cli/blob/main/docs/api-stability.md)
@@ -48,8 +48,8 @@ and domain policy, but its entry point and tests now follow Base-CLI's
 invocation model. The consuming team must maintain its supported dependency
 range, lock or otherwise reproduce the environment, and run compatibility
 tests when upgrading. Before 1.0, a minor framework upgrade may require a
-compatibility review or code changes; this demo's `<0.5` bound deliberately
-does not follow a future 0.5 line automatically.
+compatibility review or code changes; this demo's `<0.6` bound deliberately
+does not follow a future 0.6 line automatically.
 
 ## Alternatives and trade-offs
 

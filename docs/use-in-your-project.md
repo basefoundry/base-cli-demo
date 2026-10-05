@@ -7,7 +7,7 @@ invocation lifecycle.
 Install the released framework line used by this demo:
 
 ```bash
-python -m pip install "base-cli>=0.4.3,<0.5" "click>=8.1,<9"
+python -m pip install "base-cli>=0.5.0,<0.6" "click>=8.1,<8.6"
 ```
 
 Save this as `hello.py`:
