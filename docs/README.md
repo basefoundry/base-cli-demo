@@ -21,6 +21,8 @@ the complete Northstar consumer:
    installed-wheel checks.
 9. [Release process](release-process.md) — independent demo versioning,
    reproducible packages, and guarded GitHub Release steps.
+10. [Branch protection](branch-protection.md) — the required consumer and
+    compatibility checks and the single-maintainer review exception.
 
 For the framework's complete material, start at the
 [Base-CLI repository](https://github.com/basefoundry/base-cli), its
