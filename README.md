@@ -39,16 +39,12 @@ $ northstar --quiet status
 
 ### Install an existing release
 
-To install the first published demo release without cloning the repository:
-
-```bash
-python -m pip install \
-  "https://github.com/basefoundry/base-cli-demo/releases/download/v0.1.0/base_cli_demo-0.1.0-py3-none-any.whl"
-```
-
-Verify the artifact against `SHA256SUMS.txt` on the same GitHub Release. The
-wheel depends on the released `base-cli>=0.4.3,<0.5` API line; it does not
-install Base or require a Base workspace.
+The first immutable demo release is not published yet. The documented
+from-source install above is the supported path until
+[#28](https://github.com/basefoundry/base-cli-demo/issues/28) completes the
+release readiness gates. After publication, this section should be restored
+with the verified wheel URL, checksum, and matching `base-cli` dependency line;
+do not infer a release from the source `VERSION` file.
 
 The default environment is `dev`. Select another fixture environment with the
 framework lifecycle option:
@@ -142,8 +138,9 @@ python -m pip install ".[dev]"
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
-to `>=0.4.3,<0.5`. This checkout targets demo release `v0.1.0`; demo release
-versioning remains separate from framework versioning.
+to `>=0.4.3,<0.5`. This checkout carries source version `0.1.0`; immutable
+publication is tracked separately in #28, and demo release versioning remains
+independent from framework versioning.
 
 ## Documentation
 
