@@ -2,10 +2,10 @@
 
 YAML is a supported Base-CLI renderer, but it is intentionally not part of the
 demo's minimal dependencies. Install the optional extra before using
-`--format yaml`:
+`--format yaml`. Run this command from the repository root:
 
 ```console
-$ python -m pip install "base-cli-demo[yaml]"
+$ python -m pip install ".[yaml]"
 $ northstar --quiet status --format yaml
 ```
 

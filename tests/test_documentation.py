@@ -31,3 +31,16 @@ def test_documented_northstar_commands_are_executable(
         result = base_cli.testing.invoke(command, args[1:], home=Path(directory))
 
     assert result.exit_code == 0, f"{document}: {args!r}\n{result.output}"
+
+
+def test_documented_dependency_windows_match_project_metadata() -> None:
+    metadata = Path("pyproject.toml").read_text(encoding="utf-8")
+    starter = Path("docs/use-in-your-project.md").read_text(encoding="utf-8")
+
+    for requirement in ('"base-cli>=0.4.3,<0.5"', '"click>=8.1,<8.6"'):
+        assert requirement in metadata
+        assert requirement.strip('"') in starter
+
+    yaml_guide = Path("docs/yaml-output.md").read_text(encoding="utf-8")
+    assert 'python -m pip install ".[yaml]"' in yaml_guide
+    assert 'base-cli-demo[yaml]' not in yaml_guide
