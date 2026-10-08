@@ -107,7 +107,7 @@ For deeper framework context, continue with the Base-CLI
 [consumer profiles](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/consumer-profiles.md),
 [output contracts](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/output-contracts.md),
 [JSON contracts](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/json-contracts.md),
-and [testing guide](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/testing.md).
+and [testing guide](https://github.com/basefoundry/base-cli/blob/main/docs/testing.md).
 
 ## Current behavior and future scope
 
