@@ -7,7 +7,7 @@ invocation lifecycle.
 Install the released framework line used by this demo:
 
 ```bash
-python -m pip install "base-cli>=0.4.3,<0.5" "click>=8.1,<9"
+python -m pip install "base-cli>=0.4.3,<0.5" "click>=8.1,<8.6"
 ```
 
 Save this as `hello.py`:
@@ -47,6 +47,6 @@ consumer-owned configuration, and structured output.
 
 The `App` and `attach` calls establish the framework boundary; the Click
 function remains your command. See the framework's
-[consumer quickstart](https://github.com/basefoundry/base-cli/blob/main/docs/consumer-quickstart.md)
-and [API reference](https://github.com/basefoundry/base-cli/blob/main/docs/api-reference.md)
+[consumer quickstart](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/consumer-quickstart.md)
+and [API reference](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/api-reference.md)
 for the public interfaces.

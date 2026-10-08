@@ -5,7 +5,7 @@ demo's minimal dependencies. Install the optional extra before using
 `--format yaml`:
 
 ```console
-$ python -m pip install "base-cli-demo[yaml]"
+$ python -m pip install ".[yaml]"
 $ northstar --quiet status --format yaml
 ```
 
