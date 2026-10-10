@@ -111,6 +111,10 @@ def _render(
     )
 
 
+class _PublishedSnapshotDurabilityError(OSError):
+    """The snapshot was replaced, but the directory update was not durable."""
+
+
 def _persist_reconciliation(
     context: base_cli.Context[Any, Any, Any], record: Mapping[str, Any]
 ) -> None:
@@ -142,8 +146,20 @@ def _persist_reconciliation(
         temporary_input = context.temp_dir / "reconciliation-input.json"
         temporary_input.write_text(serialized, encoding="utf-8")
         context.on_cleanup(lambda: temporary_input.unlink(missing_ok=True))
-        _replace_state(staged_path, state_path)
+        durability_confirmed = _replace_state(staged_path, state_path)
         staged_path = None
+        if not durability_confirmed:
+            context.log.warning(
+                "Reconciliation snapshot was published, but directory durability could not be confirmed."
+            )
+    except _PublishedSnapshotDurabilityError as exc:
+        # os.replace is the commit point. Never describe the previous bytes as
+        # surviving a failure that happened while confirming durability after it.
+        staged_path = None
+        raise click.ClickException(
+            "Could not confirm reconciliation snapshot durability; the new snapshot was published, "
+            "but durability could not be confirmed."
+        ) from exc
     except (OSError, TypeError, ValueError) as exc:
         snapshot_message = (
             "the previous snapshot was left unchanged."
@@ -167,20 +183,36 @@ def _serialize_reconciliation(record: Mapping[str, Any]) -> str:
     return json.dumps(dict(record), sort_keys=True) + "\n"
 
 
-def _replace_state(staged_path: Path, state_path: Path) -> None:
-    """Atomically publish a complete snapshot from the same filesystem."""
+def _replace_state(staged_path: Path, state_path: Path) -> bool:
+    """Atomically publish a snapshot and report directory durability.
+
+    ``True`` means the parent directory was opened and fsynced after the
+    replacement. Windows does not provide the same directory-fsync contract,
+    so an unavailable directory handle is treated as a published snapshot
+    with unconfirmed durability; the caller emits a warning and continues.
+    """
 
     os.replace(staged_path, state_path)
     try:
         directory_fd = os.open(state_path.parent, os.O_RDONLY)
     except OSError:
         if os.name != "nt":
-            raise
-        return
+            raise _PublishedSnapshotDurabilityError("parent directory durability could not be confirmed")
+        return False
+
+    durability_error: OSError | None = None
     try:
         os.fsync(directory_fd)
-    finally:
+    except OSError as exc:
+        durability_error = exc
+    try:
         os.close(directory_fd)
+    except OSError as exc:
+        if durability_error is None:
+            durability_error = exc
+    if durability_error is not None:
+        raise _PublishedSnapshotDurabilityError(str(durability_error)) from durability_error
+    return True
 
 
 def _preserve_state_mode(staged_path: Path, state_path: Path) -> None:

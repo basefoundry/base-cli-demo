@@ -47,7 +47,7 @@ python -m pip install \
 ```
 
 Verify the artifact against `SHA256SUMS.txt` on the same GitHub Release. The
-The published `v0.1.0` wheel depends on the released `base-cli>=0.4.3,<0.5`
+published `v0.1.0` wheel depends on the released `base-cli>=0.4.3,<0.5`
 API line. The current source and next demo release target the
 `base-cli>=0.5.0,<0.6` line; neither installs Base or requires a Base workspace.
 
@@ -155,8 +155,8 @@ release. To start with a minimal consumer rather than the full demo, use the
 
 For framework-level material, start at the
 [Base-CLI repository](https://github.com/basefoundry/base-cli), its
-[getting-started guide](https://github.com/basefoundry/base-cli#quick-start),
-or the [public API reference](https://github.com/basefoundry/base-cli/blob/main/docs/api-reference.md).
+[getting-started guide](https://github.com/basefoundry/base-cli/blob/v0.5.0/README.md#quick-start),
+or the [public API reference](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-reference.md).
 
 ## Repository shape
 

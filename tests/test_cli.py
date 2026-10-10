@@ -10,6 +10,7 @@ from typing import Any
 
 import base_cli
 import base_cli_demo.cli as cli_module
+import pytest
 
 from base_cli_demo.cli import command
 
@@ -176,6 +177,97 @@ def test_failed_atomic_replace_preserves_the_previous_snapshot(
             raise OSError("simulated replace failure")
 
         monkeypatch.setattr(cli_module, "_replace_state", fail_replace)
+        failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
+
+        assert failed.exit_code == 1
+        assert "previous snapshot was left unchanged" in failed.output
+        assert state_path.read_bytes() == previous
+        assert not list(state_path.parent.glob(f".{state_path.name}.*.tmp"))
+
+
+def test_directory_open_failure_reports_published_snapshot(
+    monkeypatch: Any,
+) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+
+        def fail_after_replace(staged_path: Path, target_path: Path) -> bool:
+            cli_module.os.replace(staged_path, target_path)
+            raise cli_module._PublishedSnapshotDurabilityError("simulated directory open failure")
+
+        monkeypatch.setattr(cli_module, "_replace_state", fail_after_replace)
+        failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
+
+        assert failed.exit_code == 1
+        assert "new snapshot was published" in failed.output
+        assert "previous snapshot was left unchanged" not in failed.output
+        assert json.loads(state_path.read_text(encoding="utf-8"))["target_version"] == "2.7.0"
+        assert not list(state_path.parent.glob(f".{state_path.name}.*.tmp"))
+
+
+def test_directory_fsync_failure_reports_published_snapshot(
+    monkeypatch: Any,
+) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        def fail_after_replace(staged_path: Path, target_path: Path) -> bool:
+            cli_module.os.replace(staged_path, target_path)
+            raise cli_module._PublishedSnapshotDurabilityError("simulated directory fsync failure")
+
+        monkeypatch.setattr(cli_module, "_replace_state", fail_after_replace)
+        failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
+
+        assert failed.exit_code == 1
+        assert "new snapshot was published" in failed.output
+        assert json.loads(state_path.read_text(encoding="utf-8"))["target_version"] == "2.7.0"
+        assert not list(state_path.parent.glob(f".{state_path.name}.*.tmp"))
+
+
+def test_replace_state_directory_open_failure_occurs_after_publication(
+    monkeypatch: Any,
+    tmp_path: Path,
+) -> None:
+    staged_path = tmp_path / "staged.json"
+    state_path = tmp_path / "last-reconciliation.json"
+    staged_path.write_text("new\n", encoding="utf-8")
+    state_path.write_text("old\n", encoding="utf-8")
+    real_open = cli_module.os.open
+
+    def fail_directory_open(path: Any, flags: int, *args: Any, **kwargs: Any) -> int:
+        if Path(path) == tmp_path:
+            raise OSError("simulated directory open failure")
+        return real_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(cli_module.os, "open", fail_directory_open)
+    with pytest.raises(cli_module._PublishedSnapshotDurabilityError):
+        cli_module._replace_state(staged_path, state_path)
+
+    assert state_path.read_text(encoding="utf-8") == "new\n"
+
+
+def test_file_fsync_failure_preserves_previous_snapshot(
+    monkeypatch: Any,
+) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        first = invoke(["release", "reconcile", "--version", "2.6.0"], root)
+        assert first.exit_code == 0, first.output
+        state_path = next(root.rglob("last-reconciliation.json"))
+        previous = state_path.read_bytes()
+        real_fsync = cli_module.os.fsync
+
+        def fail_file_fsync(fd: int) -> None:
+            if not stat.S_ISDIR(cli_module.os.fstat(fd).st_mode):
+                raise OSError("simulated file fsync failure")
+            real_fsync(fd)
+
+        monkeypatch.setattr(cli_module.os, "fsync", fail_file_fsync)
         failed = invoke(["release", "reconcile", "--version", "2.7.0"], root)
 
         assert failed.exit_code == 1

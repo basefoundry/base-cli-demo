@@ -7,10 +7,12 @@ and classified as Beta. The demo tests the released `>=0.5.0,<0.6` line. This
 is not a promise that every future pre-1.0 minor line
 is compatible: Base-CLI's published policy treats patch releases as compatible
 and allows a minor release before 1.0 to be a compatibility boundary. Read the
-[API stability policy](https://github.com/basefoundry/base-cli/blob/main/docs/api-stability.md)
-and [migration notes](https://github.com/basefoundry/base-cli/blob/main/docs/migrations.md)
+[API stability policy](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-stability.md)
+and [migration notes](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/migrations.md)
 when changing the dependency range. The demo's lockfile records a reproducible
-resolved environment; library consumers should choose a range that matches
+resolved environment; readers moving to the 0.5 line should also read the
+[0.5 migration notes](https://github.com/basefoundry/base-cli/blob/main/docs/migration-0.5.md).
+Library consumers should choose a range that matches
 their own upgrade policy.
 
 Base-CLI does not replace Click or Typer. It composes with their command
@@ -61,7 +63,7 @@ does not follow a future 0.6 line automatically.
 | Base-CLI with Click or Typer | A shared lifecycle and documented automation/output boundary around a familiar parser. | One more dependency, an integration model to learn, and compatibility work as the framework evolves. |
 
 For the parser-focused comparison maintained by the framework project, see its
-[framework choice guide](https://github.com/basefoundry/base-cli/blob/main/docs/framework-choice.md).
+[framework choice guide](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/framework-choice.md).
 For primary references, see the official
 [argparse documentation](https://docs.python.org/3/library/argparse.html),
 [Click documentation](https://click.palletsprojects.com/), and
