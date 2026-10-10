@@ -143,7 +143,7 @@ python -m pip install ".[dev]"
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
-to `>=0.5.0,<0.6`. This checkout targets the next demo release after `v0.1.0`;
+to `>=0.5.0,<0.6`. This checkout prepares demo release `v0.2.0`;
 demo release versioning remains separate from framework versioning.
 
 ## Documentation

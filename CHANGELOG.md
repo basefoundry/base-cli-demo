@@ -7,6 +7,8 @@ and versions are tracked in the repo-root `VERSION` file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-10
+
 ### Changed
 
 - Align the reference consumer, compatibility matrix, release evidence, and
