@@ -26,5 +26,5 @@ the complete Northstar consumer:
 
 For the framework's complete material, start at the
 [Base-CLI repository](https://github.com/basefoundry/base-cli), its
-[getting-started guide](https://github.com/basefoundry/base-cli/blob/v0.5.0/README.md#quick-start),
-or the [public API reference](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-reference.md).
+[getting-started guide](https://github.com/basefoundry/base-cli/blob/v0.5.1/README.md#quick-start),
+or the [public API reference](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/api-reference.md).

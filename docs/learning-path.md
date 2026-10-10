@@ -103,10 +103,10 @@ Open `src/base_cli_demo/cli.py` while following the examples:
   repository conventions mandatory.
 
 For deeper framework context, continue with the Base-CLI
-[API reference](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-reference.md),
-[consumer profiles](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/consumer-profiles.md),
-[output contracts](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/output-contracts.md),
-[JSON contracts](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/json-contracts.md),
+[API reference](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/api-reference.md),
+[consumer profiles](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/consumer-profiles.md),
+[output contracts](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/output-contracts.md),
+[JSON contracts](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/json-contracts.md),
 and [testing guide](https://github.com/basefoundry/base-cli/blob/main/docs/testing.md).
 
 ## Current behavior and future scope
