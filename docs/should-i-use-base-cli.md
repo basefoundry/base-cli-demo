@@ -2,13 +2,13 @@
 
 ## Status and compatibility
 
-As of this guide, the newest published Base-CLI release is `0.4.3`; the package
-is pre-1.0 and classified as Beta. The demo currently tests the released
-`>=0.4.3,<0.5` line. This is not a promise that every future pre-1.0 minor line
+As of this guide, the target Base-CLI release is `0.5.0`; the package is pre-1.0
+and classified as Beta. The demo tests the released `>=0.5.0,<0.6` line. This
+is not a promise that every future pre-1.0 minor line
 is compatible: Base-CLI's published policy treats patch releases as compatible
 and allows a minor release before 1.0 to be a compatibility boundary. Read the
-[API stability policy](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/api-stability.md)
-and [migration notes](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/migrations.md)
+[API stability policy](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-stability.md)
+and [migration notes](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/migrations.md)
 when changing the dependency range. The demo's lockfile records a reproducible
 resolved environment; readers moving to the 0.5 line should also read the
 [0.5 migration notes](https://github.com/basefoundry/base-cli/blob/main/docs/migration-0.5.md).
@@ -50,8 +50,8 @@ and domain policy, but its entry point and tests now follow Base-CLI's
 invocation model. The consuming team must maintain its supported dependency
 range, lock or otherwise reproduce the environment, and run compatibility
 tests when upgrading. Before 1.0, a minor framework upgrade may require a
-compatibility review or code changes; this demo's `<0.5` bound deliberately
-does not follow a future 0.5 line automatically.
+compatibility review or code changes; this demo's `<0.6` bound deliberately
+does not follow a future 0.6 line automatically.
 
 ## Alternatives and trade-offs
 
@@ -63,7 +63,7 @@ does not follow a future 0.5 line automatically.
 | Base-CLI with Click or Typer | A shared lifecycle and documented automation/output boundary around a familiar parser. | One more dependency, an integration model to learn, and compatibility work as the framework evolves. |
 
 For the parser-focused comparison maintained by the framework project, see its
-[framework choice guide](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/framework-choice.md).
+[framework choice guide](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/framework-choice.md).
 For primary references, see the official
 [argparse documentation](https://docs.python.org/3/library/argparse.html),
 [Click documentation](https://click.palletsprojects.com/), and

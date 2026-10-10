@@ -39,12 +39,17 @@ $ northstar --quiet status
 
 ### Install an existing release
 
-The first immutable demo release is not published yet. The documented
-from-source install above is the supported path until
-[#28](https://github.com/basefoundry/base-cli-demo/issues/28) completes the
-release readiness gates. After publication, this section should be restored
-with the verified wheel URL, checksum, and matching `base-cli` dependency line;
-do not infer a release from the source `VERSION` file.
+To install the first published demo release without cloning the repository:
+
+```bash
+python -m pip install \
+  "https://github.com/basefoundry/base-cli-demo/releases/download/v0.1.0/base_cli_demo-0.1.0-py3-none-any.whl"
+```
+
+Verify the artifact against `SHA256SUMS.txt` on the same GitHub Release. The
+published `v0.1.0` wheel depends on the released `base-cli>=0.4.3,<0.5`
+API line. The current source and next demo release target the
+`base-cli>=0.5.0,<0.6` line; neither installs Base or requires a Base workspace.
 
 The default environment is `dev`. Select another fixture environment with the
 framework lifecycle option:
@@ -138,9 +143,8 @@ python -m pip install ".[dev]"
 ```
 
 The package requires Python 3.10 or newer and pins the supported Base-CLI line
-to `>=0.4.3,<0.5`. This checkout carries source version `0.1.0`; immutable
-publication is tracked separately in #28, and demo release versioning remains
-independent from framework versioning.
+to `>=0.5.0,<0.6`. This checkout targets the next demo release after `v0.1.0`;
+demo release versioning remains separate from framework versioning.
 
 ## Documentation
 
@@ -151,8 +155,8 @@ release. To start with a minimal consumer rather than the full demo, use the
 
 For framework-level material, start at the
 [Base-CLI repository](https://github.com/basefoundry/base-cli), its
-[getting-started guide](https://github.com/basefoundry/base-cli/blob/v0.4.3/README.md#quick-start),
-or the [public API reference](https://github.com/basefoundry/base-cli/blob/v0.4.3/docs/api-reference.md).
+[getting-started guide](https://github.com/basefoundry/base-cli/blob/v0.5.0/README.md#quick-start),
+or the [public API reference](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-reference.md).
 
 ## Repository shape
 

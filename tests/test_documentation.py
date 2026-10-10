@@ -37,7 +37,7 @@ def test_documented_dependency_windows_match_project_metadata() -> None:
     metadata = Path("pyproject.toml").read_text(encoding="utf-8")
     starter = Path("docs/use-in-your-project.md").read_text(encoding="utf-8")
 
-    for requirement in ('"base-cli>=0.4.3,<0.5"', '"click>=8.1,<8.6"'):
+    for requirement in ('"base-cli>=0.5.0,<0.6"', '"click>=8.1,<8.6"'):
         assert requirement in metadata
         assert requirement.strip('"') in starter
 

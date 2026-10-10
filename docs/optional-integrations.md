@@ -55,6 +55,9 @@ Without the extra, the command reports `telemetry=unavailable (install
 records the span in an in-memory exporter and prints its name/status; it does
 not attach argv, configuration, paths, or secrets.
 
+Successful invocations report `status=OK`; failed invocations report an error
+status while preserving the command's primary exit result.
+
 The focused tests run in both modes: the normal CI job exercises the minimal
 fallbacks, while the optional-integration CI job installs all three extras and
 exercises the enabled adapters.

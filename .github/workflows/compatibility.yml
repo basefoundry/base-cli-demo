@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       upcoming_base_cli:
-        description: "Optional pip requirement suffix for an upcoming build, for example ==0.4.4rc1"
+        description: "Optional pip requirement suffix for an upcoming build, for example ==0.5.1rc1"
         required: false
         type: string
 
@@ -29,9 +29,9 @@ jobs:
         python-version: ["3.10", "3.13"]
         base_cli:
           - name: minimum released
-            spec: "==0.4.3"
+            spec: "==0.5.0"
           - name: latest supported
-            spec: ">=0.4.3,<0.5"
+            spec: ">=0.5.0,<0.6"
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Set up Python
