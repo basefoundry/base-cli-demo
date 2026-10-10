@@ -48,5 +48,5 @@ consumer-owned configuration, and structured output.
 The `App` and `attach` calls establish the framework boundary; the Click
 function remains your command. See the framework's
 [consumer quickstart](https://github.com/basefoundry/base-cli/blob/main/docs/consumer-quickstart.md)
-and [API reference](https://github.com/basefoundry/base-cli/blob/v0.5.0/docs/api-reference.md)
+and [API reference](https://github.com/basefoundry/base-cli/blob/v0.5.1/docs/api-reference.md)
 for the public interfaces.

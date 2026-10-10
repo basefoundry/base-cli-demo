@@ -12,8 +12,8 @@ and versions are tracked in the repo-root `VERSION` file.
 ### Changed
 
 - Align the reference consumer, compatibility matrix, release evidence, and
-  documentation with the Base-CLI 0.5.0 API line; successful telemetry spans
-  now assert the 0.5.0 `status=OK` lifecycle contract.
+  documentation with the released Base-CLI 0.5.x API line; the lockfile now
+  resolves the published Base-CLI 0.5.1 patch release.
 
 ## [0.1.0] - 2026-09-02
 
